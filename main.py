@@ -1,12 +1,15 @@
 import glob
+import json
 import os
 import shutil
 import subprocess
+
+import cv2
 from PIL import Image
 import labelme2coco
-from pycocotools.coco import COCO
 import imageResize
 import labelMe
+import imageAugmentation
 
 # path parameters
 labelmePath="C:\\Users\\ubei.DESKTOP-95T650K\\.conda\\envs\\imageProcessPipeline\\Scripts\\labelme.exe"
@@ -65,9 +68,36 @@ if __name__ == '__main__':
     for jsonPath in jsonFiles:
         print("Reading : ",jsonPath)
     # set convert train split rate
-    train_split_rate = 0.85
+    train_split_rate = 1
     # Convert the Labelme annotations to COCO format
     labelme2coco.convert(labelme_folder=labelmeFolder, export_dir=cocosFolder)
+
+    #image augmentation process using albumentation library
+    # Load the Coco format annotation file
+    with open(str(cocosFolder)+"\\dataset.json",'r') as f:
+        coco_annotations = json.load(f)
+
+    # Load the image and its corresponding bounding box annotations
+    image = cv2.imread("images/_Camera2_Kit2_NG_230517_143941.jpg")
+    bboxes = coco_annotations['annotations'][0]['bbox']
+    category_ids = coco_annotations['annotations'][0]['category_id']
+
+    # import the image augmentation pipeline
+    transform= imageAugmentation.transform0
+
+    # Apply the augmentation to the image and its bounding box annotations
+    augmented = transform(image=image, bboxes=[bboxes], category_id={"annotations":[category_ids]})
+    augmented_image = augmented['image']
+    augmented_bboxes = augmented['bboxes']
+    augmented_category_ids = augmented['category_id']
+
+    # Save the augmented image and its corresponding bounding box annotations
+    cv2.imwrite('augmented_image.jpg', augmented_image)
+    coco_annotations['annotations'][0]['bbox'] = augmented_bboxes[0]
+    coco_annotations['annotations'][0]['category_id'] = augmented_category_ids[0]
+    with open('augmented_annotations.json', 'w') as f:
+        json.dump(coco_annotations, f)
+
 
 
 
