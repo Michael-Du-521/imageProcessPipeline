@@ -1,7 +1,5 @@
 import os
-
-import cv2
-
+from PIL import Image, ImageDraw
 
 def create_sub_dir(parent_dir,sub_dir_name):
     # Define the path to the subdirectory
@@ -12,20 +10,26 @@ def create_sub_dir(parent_dir,sub_dir_name):
     return sub_dir_path
 
 
-def draw_bboxes(image_path, coco_annotations):
+def draw_bboxes(image_path, coco_annotation,generated_bbbox_image_path):
     # Load the image
-    image = cv2.imread(image_path)
+    image = Image.open(image_path)
 
     # Draw each bounding box on the image
-    for annotation in coco_annotations['annotations']:
-        bbox = annotation['bbox']
-        category_id = annotation['category_id']
-        category = coco_annotations['categories'][category_id]['name'] #in coco the categories also start at 0
-        x, y, w, h = bbox
-        cv2.rectangle(image, (int(x), int(y)), (int(x + w), int(y + h)), (0, 255, 0), 2)
-        cv2.putText(image, category, (int(x), int(y) - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    bbox = coco_annotation['annotations']['bbox']
+    category_id = coco_annotation['annotations']['category_id']
+    #temperary placeholder
+    category = "arrow"
+    x, y, w, h = bbox
+    # Create a drawing object
+    draw = ImageDraw.Draw(image)
 
-    # Display the image
-    cv2.imshow('Bboxes', image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    #outline_color = (0, 255, 0)  # Green color
+    outline_color =255
+
+    # Draw bbox on the image
+    draw.rectangle([x, y, x + w, y + h], outline=outline_color, width=2)
+    draw.text((x, y - 10), category, fill=outline_color)
+
+    # Save the image with bounding boxes
+    image.save(generated_bbbox_image_path+"\\image.jpg")
+

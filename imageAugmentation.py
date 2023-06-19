@@ -1,10 +1,6 @@
-import datetime
 import albumentations as A
-from albumentations.core.bbox_utils import BboxParams, denormalize_bbox, normalize_bbox
 import cv2
-import random
-import cv2
-from matplotlib import pyplot as plt
+
 
 
 # Basic spatial-level transformations
@@ -34,14 +30,14 @@ transform2 = A.Compose([
     crop
 ])
 
-# Read an image with OpenCV and convert it to the RGB colorspace
-image = cv2.imread("images\\_Camera2_Kit2_NG_230517_143941.jpg")
-image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-
-# Augment an image
-transformed = transform1(image=image)
-transformed_image = transformed["image"]
-
-# Write output image
-cv2.imwrite("C:\\Users\\ubei.DESKTOP-95T650K\\Desktop\\006.jpg", transformed_image)
-print("image augment done")
+# # Read an image with OpenCV and convert it to the RGB colorspace
+# image = cv2.imread("images\\_Camera2_Kit2_NG_230517_143941.jpg")
+# image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+#
+# # Augment an image
+# transformed = transform1(image=image)
+# transformed_image = transformed["image"]
+#
+# # Write output image
+# cv2.imwrite("C:\\Users\\ubei.DESKTOP-95T650K\\Desktop\\006.jpg", transformed_image)
+# print("image augment done")
