@@ -122,7 +122,7 @@ if __name__ == '__main__':
         augmented_image.save(augmented_image_path_name)
         #draw bbox and the augmented image at the same time
         labelMe.draw_bboxes_augmented_annotations(augmentationFolder,augmented_image_path_name,augmented_annotations_filename , generated_bbox_image_path)
-print("Process Ends Successfully")
+print("\n"+"ImageProcessPipeline Ends Successfully!","Please change to directory "+generated_bbox_image_path+" see the final results, have a good day")
 
 
 
