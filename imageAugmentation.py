@@ -1,8 +1,6 @@
 import albumentations as A
 import cv2
 
-
-
 # Basic spatial-level transformations
 hor_flip = A.HorizontalFlip(p=1)  # 水平翻转
 
@@ -17,8 +15,7 @@ sharp = A.Sharpen(p=0.5) #锐化
 # Declare an augmentation pipeline, p means probability
 transform0 = A.Compose([
     A.HorizontalFlip(p=0.5),
-    A.RandomBrightnessContrast(p=0.2),
-    A.Resize(512, 512, always_apply=True, p=1.0)],
+    A.RandomBrightnessContrast(p=0.2)],
     bbox_params=A.BboxParams(format='coco',label_fields=['category_id']))
 
 transform1 = A.Compose([

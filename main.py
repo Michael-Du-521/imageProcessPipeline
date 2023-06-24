@@ -19,7 +19,7 @@ labelmeFolder=str(resizedImagesPath)
 cocosFolder="D:\\Image_Process_Pipeline_06192023\\880防投反0518原图-尺寸修改-coco\\cocos"
 augmentationFolder="D:\\Image_Process_Pipeline_06192023\\880防投反0518原图-尺寸修改-augmentation"
 labelmeDir = str(resizedImagesPath)
-generated_bbbox_image_path="D:\\Image_Process_Pipeline_06192023\\880防投反0518原图-尺寸修改-bbox"
+generated_bbox_image_path="D:\\Image_Process_Pipeline_06192023\\880防投反0518原图-尺寸修改-bbox"
 
 
 # Press the green button in the gutter to run the script.
@@ -45,7 +45,6 @@ if __name__ == '__main__':
     # Use the subprocess module to open Labelme
     subprocess.call(command, shell=True)
     sub_dir_path_json = labelMe.create_sub_dir(resizedImagesPath,sub_dir_name="annotations")
-    sub_dir_path_coco = labelMe.create_sub_dir(resizedImagesPath, sub_dir_name="cocos")
     # Loop over all the files in the mixed directory
     for file_name in os.listdir(resizedImagesPath):
         # Check if the file is a JSON file
@@ -57,7 +56,7 @@ if __name__ == '__main__':
             # Move the file to the subdirectory
             shutil.copy(file_path, new_file_path)
             # Delete the origional jsons or not
-            deleteJsonFlag = True
+            deleteJsonFlag = False
             if(deleteJsonFlag):
                 # Delete the original file
                 print("Delete [{}] in parent directory : {}".format(file_name,deleteJsonFlag))
@@ -75,54 +74,53 @@ if __name__ == '__main__':
     labelme2coco.convert(labelme_folder=labelmeFolder, export_dir=cocosFolder)
 
     #image augmentation process using albumentation library
+
     # Load the Coco format annotation file
     with open(str(cocosFolder)+"\\dataset.json",'r') as f:
         coco_annotations = json.load(f)
 
-    # Load the image and its corresponding bounding box annotations
-    #sample_image_path="images/_Camera2_Kit2_NG_230517_143941.jpg"
-    sample_image_resize_path = "D:\\Image_Process_Pipeline_06192023\\880防投反0518原图-尺寸修改"
-    #"D:\Image_Process_Pipeline_06192023\880防投反0518原图-尺寸修改\_Camera2_Kit2_NG_230517_143941.jpg"
-    sample_image_resize_augmented_path_name = "D:\\Image_Process_Pipeline_06192023\\880防投反0518原图-尺寸修改-augmentation\\augmented_image.jpg"
-    image = np.array(Image.open(sample_image_resize_path+"\\_Camera2_Kit2_NG_230517_143941.jpg"))
-    bboxes = coco_annotations['annotations'][0]['bbox']
-    category_ids = coco_annotations['annotations'][0]['category_id']
-
     # import the image augmentation pipeline
-    transform= imageAugmentation.transform0
+    transform = imageAugmentation.transform0
 
-    # Apply the augmentation to the image and its bounding box annotations
-    augmented = transform(image=image, bboxes=[bboxes], category_id={category_ids})
-    augmented_image =Image.fromarray(augmented['image'])
-    #print(str(augmented))
-    augmented_bboxes = augmented['bboxes']
-    augmented_category_ids = augmented['category_id']
+    # Iterate over the images in the dataset
+    for image_data in coco_annotations['images']:
+        image_id = image_data['id']
+        image_filename = image_data['file_name']
 
-    # Save the augmented image and its corresponding bounding box annotations
-    try:
-        print("augmented image will be written into :",augmentationFolder)
-        augmented_image_path=augmentationFolder+"\\augmentted_image.jpg"
-        augmented_image.save(augmented_image_path)
-        print("Image[{}] is saved successfully in :".format(augmented_image_path),augmentationFolder)
-    except Exception as e:
-        print("Error saving the image:", str(e))
-    # Create a new Coco annotation dictionary
-    coco_annotations_augmented= {
-    "info": {},
-    "licenses": [],
-    "images": [],
-    "annotations": {'bbox':[],'category_id':[]},
-    "categories": [
-  ]
-}
-    coco_annotations_augmented['annotations']['bbox'] = augmented_bboxes[0]
-    coco_annotations_augmented['annotations']['category_id'] = augmented_category_ids[0]
-    augmented_annotations_path=augmentationFolder+'\\augmented_annotations.json'
-    with open(augmented_annotations_path, 'w') as f:
-        json.dump(coco_annotations_augmented, f)
+        # Read the resized image
+        image_path = os.path.join(resizedImagesPath, image_filename)
+        image = Image.open(image_path)
+        image_np = np.array(image)
 
-    #draw bbox and augmented image
-    labelMe.draw_bboxes(sample_image_resize_augmented_path_name, coco_annotations_augmented, generated_bbbox_image_path)
+        # Find the corresponding annotations for the image
+        annotations = [annotation for annotation in coco_annotations['annotations'] if annotation['image_id'] == image_id]
+        # Apply the augmentation to the image and its bounding box annotations
+        augmented = transform(image=image_np,bboxes=[ann['bbox'] for ann in annotations], category_id=[ann['category_id'] for ann in annotations])
+        print(augmented)
+        # Access the augmented image and annotations
+        augmented_image_np = augmented['image']
+        augmented_bboxes = augmented['bboxes']
+        # Update the annotations with the transformed bounding boxes
+        for i, ann in enumerate(annotations):
+            ann['bbox'] = augmented_bboxes[i] # Update the annotations as needed
+        augmented_annotations =annotations
+        # Convert the augmented image back to PIL image
+        augmented_image =Image.fromarray(augmented_image_np)
+
+
+        # Save the augmented images corresponding bounding box annotations
+        augmented_annotations_filename = f"augmented{image_filename.replace('.jpg', '.json')}"
+        augmented_annotations_path = os.path.join(augmentationFolder, augmented_annotations_filename)
+        with open(augmented_annotations_path, 'w') as f:
+            json.dump(augmented_annotations, f)
+
+        # Save the augmented image with modified filename
+        augmented_image_filename = f"augmented{image_filename}"
+        augmented_image_path_name = os.path.join(augmentationFolder, augmented_image_filename)
+        augmented_image.save(augmented_image_path_name)
+        #draw bbox and the augmented image at the same time
+        labelMe.draw_bboxes_augmented_annotations(augmentationFolder,augmented_image_path_name,augmented_annotations_filename , generated_bbox_image_path)
+print("Process Ends Successfully")
 
 
 
