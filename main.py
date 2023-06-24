@@ -1,3 +1,4 @@
+#依赖类库导入
 import glob
 import json
 import os
@@ -11,9 +12,11 @@ import labelMe
 import imageAugmentation
 import numpy as np
 
-# path parameters
-labelmePath="C:\\Users\\ubei.DESKTOP-95T650K\\.conda\\envs\\imageProcessPipeline\\Scripts\\labelme.exe"
+# 路径变量 path parameters
+#原图文件夹路径
 imagesFolderPath="D:\\Image_Process_Pipeline_06192023\\880防投反0518原图"
+#labelme 可执行文件 路径
+labelmePath="C:\\Users\\ubei.DESKTOP-95T650K\\.conda\\envs\\imageProcessPipeline\\Scripts\\labelme.exe"
 resizedImagesPath= "D:\\Image_Process_Pipeline_06192023\\880防投反0518原图-尺寸修改"
 labelmeFolder=str(resizedImagesPath)
 cocosFolder="D:\\Image_Process_Pipeline_06192023\\880防投反0518原图-尺寸修改-coco\\cocos"
@@ -22,12 +25,11 @@ labelmeDir = str(resizedImagesPath)
 generated_bbox_image_path="D:\\Image_Process_Pipeline_06192023\\880防投反0518原图-尺寸修改-bbox"
 
 
-# Press the green button in the gutter to run the script.
+# 点击左侧绿色按钮运行该脚本 Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     # read images in specified folder
     imageFiles = glob.glob(imagesFolderPath + "\\*.jpg")
-    print(imageFiles)
-    # Loop over each image file, process it, and save the output image to the resized folder
+    # 逐个读取图像文件、处理它，并将其保存至 修改尺寸后的文件夹 Loop over each image file, process it, and save the output image to the resized folder
     for imagePath in imageFiles:
         print("Reading : ",imagePath)
         # Process the image file
