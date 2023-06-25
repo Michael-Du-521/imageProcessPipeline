@@ -11,6 +11,7 @@ import imageResize
 import labelMe
 import imageAugmentation
 import numpy as np
+import albumentations as A
 
 # 路径变量 path parameters
 #原图文件夹路径
@@ -82,7 +83,7 @@ if __name__ == '__main__':
         coco_annotations = json.load(f)
 
     # import the image augmentation pipeline
-    transform = imageAugmentation.transform0
+    transformer = imageAugmentation.transformer0
 
     # Iterate over the images in the dataset
     for image_data in coco_annotations['images']:
@@ -97,8 +98,7 @@ if __name__ == '__main__':
         # Find the corresponding annotations for the image
         annotations = [annotation for annotation in coco_annotations['annotations'] if annotation['image_id'] == image_id]
         # Apply the augmentation to the image and its bounding box annotations
-        augmented = transform(image=image_np,bboxes=[ann['bbox'] for ann in annotations], category_id=[ann['category_id'] for ann in annotations])
-        print(augmented)
+        augmented = transformer(image=image_np,bboxes=[ann['bbox'] for ann in annotations], category_id=[ann['category_id'] for ann in annotations])
         # Access the augmented image and annotations
         augmented_image_np = augmented['image']
         augmented_bboxes = augmented['bboxes']
@@ -123,6 +123,8 @@ if __name__ == '__main__':
         #draw bbox and the augmented image at the same time
         labelMe.draw_bboxes_augmented_annotations(augmentationFolder,augmented_image_path_name,augmented_annotations_filename , generated_bbox_image_path)
 print("\n"+"ImageProcessPipeline Ends Successfully!","Please change to directory "+generated_bbox_image_path+" see the final results, have a good day")
+# Execute system command to open the folder
+subprocess.Popen(f'explorer "{generated_bbox_image_path}"')
 
 
 
